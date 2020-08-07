@@ -22,7 +22,7 @@
       {{ playerTurn }}
     </p>
     <ul v-if="timeToChoose">
-      <li v-for="card in player.hand" :key="card" @click="playCard(card)">{{card}}</li>
+      <li v-for="card in player.hand" :key="card" @click="playCard(card)">{{ card }}</li>
     </ul>
     <p>
       <span>Selected Card:</span>
@@ -134,15 +134,18 @@ export default {
        return (this.roundEnd = true);
      }
     },
-    drawCard() {
+    determineCurrentPlayer() {
       var currentPlayer = this.playerTurn ? 'player' : 'computer';
-
-      console.log(currentPlayer);
+      console.log('current player: ', currentPlayer);
+      return currentPlayer;
+    },
+    drawCard() {
+      var currentPlayer = this.determineCurrentPlayer();
       // If there are cards that can be drawn...
       if (this.deck.length > 0) {
         // ...Add the top card from the deck to the current player's hand
         this.[currentPlayer].hand.push(this.deck[0]);
-
+        console.log(currentPlayer + ' drew ' + this.deck[0]);
         // ...Remove that top card from the deck
         this.deck.splice(0, 1);
       }
@@ -156,10 +159,20 @@ export default {
       // If computer...
       else {
         // Go through checks to determine what card should be played
-        this.playCard(this.selectedCard);
+        this.playCard(this.computer.hand[0]);
       }
     },
-    playCard() {
+    playCard(card) {
+      // Determine who the current player is
+      var currentPlayer = this.determineCurrentPlayer();
+
+      console.log(currentPlayer + " played " + card);
+
+      // Remove the selected card from the current player's hand
+      var index = this.[currentPlayer].hand.indexOf(this.selectedCard);
+      this.[currentPlayer].hand.splice(index,1);
+
+      this.timeToChoose = false;
       this.setPlayerTurn();
     },
     setPlayerTurn() {
