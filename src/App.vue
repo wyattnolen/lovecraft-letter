@@ -21,7 +21,13 @@
       <span>Player's turn?:</span>
       {{ playerTurn }}
     </p>
-    <p @click="drawCard()">Draw Card</p>
+    <ul v-if="timeToChoose">
+      <li v-for="card in player.hand" :key="card" @click="playCard(card)">{{card}}</li>
+    </ul>
+    <p>
+      <span>Selected Card:</span>
+      {{ selectedCard }}
+    </p>
   </div>
 </template>
 
@@ -75,6 +81,8 @@ export default {
         roundWins: []
       },
       playerTurn: true,
+      timeToChoose: false,
+      selectedCard: "",
       roundEnd: false,
       gameEnd: false
     };
@@ -87,7 +95,6 @@ export default {
       if (!this.roundEnd) {
         this.drawCard();
         this.chooseCard();
-        this.setPlayerTurn();
         this.checkRoundEnd();
       }
     },
@@ -142,10 +149,18 @@ export default {
     },
     chooseCard() {
       // If player...
+      if (this.playerTurn) {
         // Let them select which card they want to play
+        this.timeToChoose = true;
+      }
       // If computer...
+      else {
         // Go through checks to determine what card should be played
-      // Call matching function to do card affect
+        this.playCard(this.selectedCard);
+      }
+    },
+    playCard() {
+      this.setPlayerTurn();
     },
     setPlayerTurn() {
       this.playerTurn = !this.playerTurn;
