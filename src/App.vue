@@ -1,6 +1,11 @@
 <template>
   <div id="app">
     <router-view />
+    <p><span>Deck: </span> {{ deck }}</p>
+    <p><span>Removed Card: </span> {{ removedCard }}</p>
+    <p><span>Player's Hand: </span>{{playerHand}}</p>
+    <p><span>Computer's Hand: </span>{{computerHand}}</p>
+    <p @click="drawCard()">Draw Card</p>
   </div>
 </template>
 
@@ -28,6 +33,8 @@ export default {
       },
       deck: ["0", "1", "2"],
       removedCard: "",
+      playerHand: [],
+      computerHand: []
     };
   },
   created() {
@@ -37,9 +44,7 @@ export default {
     start() {
       this.shuffleDeck();
       this.removeTopCard();
-      this.status();
-      this.addTopCardBack();
-      this.status();
+      // this.addTopCardBack();
     },
     shuffleDeck() {
       var array = this.deck;
@@ -67,12 +72,22 @@ export default {
       this.deck.push(this.removedCard);
       this.removedCard = "";
     },
-    status() {
-      console.log('removed card', this.removedCard);
-      console.log(this.deck);
+    drawCard() {
+      // If there are cards that can be drawn...
+      if (this.deck.length > 0) {
+        // ...Add the top card from the deck to the current player's hand
+        this.playerHand.push(this.deck[0]);
+
+        // ...Remove that top card from the deck
+        this.deck.splice(0, 1);
+      }
     }
   }
 };
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+span {
+  font-weight: bold;
+}
+</style>
