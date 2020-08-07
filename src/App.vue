@@ -103,6 +103,7 @@ export default {
     start() {
       this.shuffleDeck();
       this.removeTopCard();
+      this.drawInitialHand();
       this.setPlayerTurn();
       // this.addTopCardBack();
     },
@@ -139,8 +140,14 @@ export default {
       console.log('current player: ', currentPlayer);
       return currentPlayer;
     },
-    drawCard() {
-      var currentPlayer = this.determineCurrentPlayer();
+    drawInitialHand() {
+        // Each player draws a card
+        this.drawCard('player');
+        this.drawCard('computer');
+    },
+    drawCard(player) {
+      var currentPlayer = player ? player : this.determineCurrentPlayer();
+
       // If there are cards that can be drawn...
       if (this.deck.length > 0) {
         // ...Add the top card from the deck to the current player's hand
