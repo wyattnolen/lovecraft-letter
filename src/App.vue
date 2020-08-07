@@ -38,6 +38,8 @@ export default {
       this.shuffleDeck();
       this.removeTopCard();
       this.status();
+      this.addTopCardBack();
+      this.status();
     },
     shuffleDeck() {
       var array = this.deck;
@@ -60,6 +62,10 @@ export default {
     removeTopCard() {
       this.removedCard = this.deck[0];
       this.deck.splice(0, 1);
+    },
+    addTopCardBack() {
+      this.deck.push(this.removedCard);
+      this.removedCard = "";
     },
     status() {
       console.log('removed card', this.removedCard);
