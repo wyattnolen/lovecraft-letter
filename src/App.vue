@@ -26,7 +26,8 @@ export default {
           title: "Investigators"
         }
       },
-      deck: ["0", "1", "2"]
+      deck: ["0", "1", "2"],
+      removedCard: "",
     };
   },
   created() {
@@ -35,6 +36,8 @@ export default {
   methods: {
     start() {
       this.shuffleDeck();
+      this.removeTopCard();
+      this.status();
     },
     shuffleDeck() {
       var array = this.deck;
@@ -53,6 +56,14 @@ export default {
         array[currentIndex] = array[randomIndex];
         array[randomIndex] = temporaryValue;
       }
+    },
+    removeTopCard() {
+      this.removedCard = this.deck[0];
+      this.deck.splice(0, 1);
+    },
+    status() {
+      console.log('removed card', this.removedCard);
+      console.log(this.deck);
     }
   }
 };
