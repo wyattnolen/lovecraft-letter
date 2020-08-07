@@ -1,10 +1,26 @@
 <template>
   <div id="app">
     <router-view />
-    <p><span>Deck: </span> {{ deck }}</p>
-    <p><span>Removed Card: </span> {{ removedCard }}</p>
-    <p><span>Player's Hand: </span>{{playerHand}}</p>
-    <p><span>Computer's Hand: </span>{{computerHand}}</p>
+    <p>
+      <span>Deck:</span>
+      {{ deck }}
+    </p>
+    <p>
+      <span>Removed Card:</span>
+      {{ removedCard }}
+    </p>
+    <p>
+      <span>Player's Hand:</span>
+      {{ player.hand }}
+    </p>
+    <p>
+      <span>Computer's Hand:</span>
+      {{ computer.hand }}
+    </p>
+    <p>
+      <span>Player's turn?:</span>
+      {{ playerTurn }}
+    </p>
     <p @click="drawCard()">Draw Card</p>
   </div>
 </template>
@@ -29,21 +45,58 @@ export default {
           id: "2",
           value: "1",
           title: "Investigators"
+        },
+        c3: {
+          id: "3",
+          value: "1",
+          title: "Investigators"
+        },
+        c4: {
+          id: "4",
+          value: "1",
+          title: "Investigators"
+        },
+        c5: {
+          id: "5",
+          value: "1",
+          title: "Investigators"
         }
       },
-      deck: ["0", "1", "2"],
+      deck: ["0", "1", "2", "3", "4", "5"],
       removedCard: "",
-      playerHand: [],
-      computerHand: []
+      player: {
+        hand: [],
+        discard: [],
+        roundWins: []
+      },
+      computer: {
+        hand: [],
+        discard: [],
+        roundWins: []
+      },
+      playerTurn: true,
+      roundEnd: false,
+      gameEnd: false
     };
   },
   created() {
     this.start();
   },
+  watch: {
+    playerTurn: function () {
+      if (!this.roundEnd) {
+        this.drawCard();
+        this.chooseCard();
+        this.setPlayerTurn();
+        this.checkRoundEnd();
+      }
+    },
+  },
   methods: {
     start() {
       this.shuffleDeck();
       this.removeTopCard();
+      this.setPlayerTurn();
       // this.addTopCardBack();
     },
     shuffleDeck() {
@@ -68,20 +121,39 @@ export default {
       this.removedCard = this.deck[0];
       this.deck.splice(0, 1);
     },
-    addTopCardBack() {
-      this.deck.push(this.removedCard);
-      this.removedCard = "";
+    checkRoundEnd() {
+     // temp logic, just to prevent endless loop.
+     if (this.deck.length == 0) {
+       return (this.roundEnd = true);
+     }
     },
     drawCard() {
+      var currentPlayer = this.playerTurn ? 'player' : 'computer';
+
+      console.log(currentPlayer);
       // If there are cards that can be drawn...
       if (this.deck.length > 0) {
         // ...Add the top card from the deck to the current player's hand
-        this.playerHand.push(this.deck[0]);
+        this.[currentPlayer].hand.push(this.deck[0]);
 
         // ...Remove that top card from the deck
         this.deck.splice(0, 1);
       }
-    }
+    },
+    chooseCard() {
+      // If player...
+        // Let them select which card they want to play
+      // If computer...
+        // Go through checks to determine what card should be played
+      // Call matching function to do card affect
+    },
+    setPlayerTurn() {
+      this.playerTurn = !this.playerTurn;
+    },
+    addTopCardBack() {
+      this.deck.push(this.removedCard);
+      this.removedCard = "";
+    },
   }
 };
 </script>
