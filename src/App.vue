@@ -21,7 +21,13 @@
       <span>Player's turn?:</span>
       {{ playerTurn }}
     </p>
-    <p @click="drawCard()">Draw Card</p>
+    <ul v-if="timeToChoose">
+      <li v-for="card in player.hand" :key="card" @click="playCard(card)">{{ card }}</li>
+    </ul>
+    <p>
+      <span>Selected Card:</span>
+      {{ selectedCard }}
+    </p>
   </div>
 </template>
 
@@ -75,6 +81,8 @@ export default {
         roundWins: []
       },
       playerTurn: true,
+      timeToChoose: false,
+      selectedCard: "",
       roundEnd: false,
       gameEnd: false
     };
@@ -87,7 +95,6 @@ export default {
       if (!this.roundEnd) {
         this.drawCard();
         this.chooseCard();
-        this.setPlayerTurn();
         this.checkRoundEnd();
       }
     },
@@ -127,25 +134,46 @@ export default {
        return (this.roundEnd = true);
      }
     },
-    drawCard() {
+    determineCurrentPlayer() {
       var currentPlayer = this.playerTurn ? 'player' : 'computer';
-
-      console.log(currentPlayer);
+      console.log('current player: ', currentPlayer);
+      return currentPlayer;
+    },
+    drawCard() {
+      var currentPlayer = this.determineCurrentPlayer();
       // If there are cards that can be drawn...
       if (this.deck.length > 0) {
         // ...Add the top card from the deck to the current player's hand
         this.[currentPlayer].hand.push(this.deck[0]);
-
+        console.log(currentPlayer + ' drew ' + this.deck[0]);
         // ...Remove that top card from the deck
         this.deck.splice(0, 1);
       }
     },
     chooseCard() {
       // If player...
+      if (this.playerTurn) {
         // Let them select which card they want to play
+        this.timeToChoose = true;
+      }
       // If computer...
+      else {
         // Go through checks to determine what card should be played
-      // Call matching function to do card affect
+        this.playCard(this.computer.hand[0]);
+      }
+    },
+    playCard(card) {
+      // Determine who the current player is
+      var currentPlayer = this.determineCurrentPlayer();
+
+      console.log(currentPlayer + " played " + card);
+
+      // Remove the selected card from the current player's hand
+      var index = this.[currentPlayer].hand.indexOf(this.selectedCard);
+      this.[currentPlayer].hand.splice(index,1);
+
+      this.timeToChoose = false;
+      this.setPlayerTurn();
     },
     setPlayerTurn() {
       this.playerTurn = !this.playerTurn;
