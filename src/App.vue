@@ -73,12 +73,12 @@ export default {
       player: {
         hand: [],
         discard: [],
-        roundWins: []
+        roundWins: 0
       },
       computer: {
         hand: [],
         discard: [],
-        roundWins: []
+        roundWins: 0
       },
       playerTurn: true,
       timeToChoose: false,
@@ -95,7 +95,7 @@ export default {
       if (!this.roundEnd) {
         this.drawCard();
         this.chooseCard();
-        this.checkRoundEnd();
+        this.checkRoundEndWinner();
       }
     },
   },
@@ -129,10 +129,23 @@ export default {
       this.removedCard = this.deck[0];
       this.deck.splice(0, 1);
     },
-    checkRoundEnd() {
-     // temp logic, just to prevent endless loop.
-     if (this.deck.length == 0) {
-       return (this.roundEnd = true);
+    checkRoundEndWinner() {
+     if (this.deck.length == 0 && this.computer.hand.length == 1 && this.player.hand.length == 1) {
+      this.roundEnd = true;
+      let computerFinalCard = this.computer.hand[0].value;
+      let playerFinalCard = this.player.hand[0].value;
+
+      if (computerFinalCard > playerFinalCard) {
+        console.log('Computer won the round!');
+        this.computer.roundWins += 1;
+      }
+      else if (computerFinalCard < playerFinalCard) {
+        console.log('Player won the round!');
+        this.player.roundWins += 1;
+      }
+      else {
+        console.log('You tied!');
+      }
      }
     },
     determineCurrentPlayer() {
