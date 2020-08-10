@@ -2,6 +2,10 @@
   <div id="app">
     <router-view />
     <p>
+      <span>Card:</span>
+      <Card></Card>
+    </p>
+    <p>
       <span>Deck:</span>
       {{ deck }}
     </p>
@@ -18,11 +22,13 @@
       {{ computer.hand }}
     </p>
     <p>
-      <span>Player's turn?:</span>
+      <span>Whose Turn is it:</span>
       {{ playerTurn }}
     </p>
     <ul v-if="timeToChoose">
-      <li v-for="card in player.hand" :key="card" @click="playCard(card)">{{ card }}</li>
+      <li v-for="card in player.hand" :key="card" @click="playCard(card)">
+        {{ card }}
+      </li>
     </ul>
     <p>
       <span>Selected Card:</span>
@@ -32,8 +38,13 @@
 </template>
 
 <script>
+import Card from "@/components/Card.vue";
+
 export default {
   name: "App",
+  components: {
+    Card
+  },
   data: function() {
     return {
       cards: {
@@ -70,17 +81,37 @@ export default {
       },
       deck: ["0", "1", "2", "3", "4", "5"],
       removedCard: "",
+      players: {
+        player: {
+          id: 1,
+          hand: [],
+          discard: [],
+          isStillPlaying: true,
+          roundWins: []
+        },
+        computer: {
+          id: 2,
+          hand: [],
+          discard: [],
+          isStillPlaying: true,
+          roundWins: []
+        },
+      },
       player: {
+        id: 1,
         hand: [],
         discard: [],
+        isStillPlaying: true,
         roundWins: []
       },
       computer: {
+        id: 2,
         hand: [],
         discard: [],
+        isStillPlaying: true,
         roundWins: []
       },
-      playerTurn: true,
+      playerTurn: 'player',
       timeToChoose: false,
       selectedCard: "",
       roundEnd: false,
@@ -93,7 +124,7 @@ export default {
   watch: {
     playerTurn: function () {
       if (!this.roundEnd) {
-        this.drawCard();
+        this.addCardtoHand();
         this.chooseCard();
         this.checkRoundEnd();
       }
@@ -107,46 +138,57 @@ export default {
       this.setPlayerTurn();
       // this.addTopCardBack();
     },
-    shuffleDeck() {
-      var array = this.deck;
-      var currentIndex = array.length,
-        temporaryValue,
-        randomIndex;
 
-      // While there remain elements to shuffle...
-      while (0 !== currentIndex) {
-        // Pick a remaining element...
-        randomIndex = Math.floor(Math.random() * currentIndex);
-        currentIndex -= 1;
-
-        // And swap it with the current element.
-        temporaryValue = array[currentIndex];
-        array[currentIndex] = array[randomIndex];
-        array[randomIndex] = temporaryValue;
-      }
-    },
-    removeTopCard() {
-      this.removedCard = this.deck[0];
-      this.deck.splice(0, 1);
-    },
     checkRoundEnd() {
      // temp logic, just to prevent endless loop.
      if (this.deck.length == 0) {
        return (this.roundEnd = true);
      }
     },
-    determineCurrentPlayer() {
-      var currentPlayer = this.playerTurn ? 'player' : 'computer';
-      console.log('current player: ', currentPlayer);
-      return currentPlayer;
+
+/* START Deck Functions */
+    shuffleDeck() {
+      var array = this.deck;
+      var currentIndex = array.length,
+        temporaryValue,
+        randomIndex;
+
+      while (0 !== currentIndex) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex -= 1;
+
+        temporaryValue = array[currentIndex];
+        array[currentIndex] = array[randomIndex];
+        array[randomIndex] = temporaryValue;
+      }
     },
+
+    removeTopCard() {
+      this.removedCard = this.deck[0];
+      this.deck.splice(0, 1);
+    },
+
+    addTopCardBack() {
+      this.deck.push(this.removedCard);
+      this.removedCard = "";
+    },
+
+/* END Deck Functions */
+
+
+/* START Player Functions */
+    getCurrentPlayer() {
+      return this.playerTurn;
+    },
+
     drawInitialHand() {
         // Each player draws a card
-        this.drawCard('player');
-        this.drawCard('computer');
+        this.addCardtoHand('player');
+        this.addCardtoHand('computer');
     },
-    drawCard(player) {
-      var currentPlayer = player ? player : this.determineCurrentPlayer();
+
+    addCardtoHand(player) {
+      var currentPlayer = (typeof(player) !== 'undefined') ? player : this.getCurrentPlayer();
 
       // If there are cards that can be drawn...
       if (this.deck.length > 0) {
@@ -157,9 +199,10 @@ export default {
         this.deck.splice(0, 1);
       }
     },
+
     chooseCard() {
       // If player...
-      if (this.playerTurn) {
+      if (this.playerTurn == 'player') {
         // Let them select which card they want to play
         this.timeToChoose = true;
       }
@@ -169,26 +212,24 @@ export default {
         this.playCard(this.computer.hand[0]);
       }
     },
-    playCard(card) {
-      // Determine who the current player is
-      var currentPlayer = this.determineCurrentPlayer();
 
-      console.log(currentPlayer + " played " + card);
+    playCard(card) {
+
+      console.log(this.playerTurn + " played " + card);
 
       // Remove the selected card from the current player's hand
-      var index = this.[currentPlayer].hand.indexOf(this.selectedCard);
-      this.[currentPlayer].hand.splice(index,1);
+      var index = this.[this.playerTurn].hand.indexOf(this.selectedCard);
+      this.[this.playerTurn].hand.splice(index,1);
 
       this.timeToChoose = false;
       this.setPlayerTurn();
     },
+
     setPlayerTurn() {
-      this.playerTurn = !this.playerTurn;
+      this.playerTurn = (this.playerTurn == 'player') ? 'computer' : 'player';
     },
-    addTopCardBack() {
-      this.deck.push(this.removedCard);
-      this.removedCard = "";
-    },
+/* END Player Functions */
+
   }
 };
 </script>
