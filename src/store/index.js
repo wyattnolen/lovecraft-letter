@@ -11,7 +11,9 @@ export default new Vuex.Store({
         hand: [],
         discard: [],
         isStillPlaying: true,
-        isCurrentPlayer: true,
+        isCurrentPlayer: false,
+        isHuman: true,
+        isReadyToPickCard: false,
         roundWins: [],
       },
       {
@@ -20,7 +22,19 @@ export default new Vuex.Store({
         discard: [],
         isStillPlaying: true,
         isCurrentPlayer: false,
-        roundWins: []
+        isHuman: false,
+        isReadyToPickCard: false,
+        roundWins: [],
+      },
+      {
+        id: "p3",
+        hand: [],
+        discard: [],
+        isStillPlaying: true,
+        isCurrentPlayer: true,
+        isHuman: false,
+        isReadyToPickCard: false,
+        roundWins: [],
       },
     ],
 
@@ -39,36 +53,63 @@ export default new Vuex.Store({
     playersHand: (state) => (id) => {
       return state.players.find(player => player.id === id).hand
     },
+    isPlayerHuman: (state) => (id) => {
+      return state.players.find(player => player.id === id).isHuman
+    },
+    timeToChoosePlayerId: (state) => {
+      let player = state.players.find(player => player.isReadyToPickCard === true);
+      player = typeof player != 'undefined' ? player.id : "";
+      return player
+    }
   },
   mutations: {
     addCardToPlayerHand (state, payload) {
       let player = state.players.find(player => player.id === payload.playerId)
       player.hand.push(payload.card);
     },
-  },
-  actions: {
+    removeCardFromPlayerHand (state, payload) {
+      let player = state.players.find(player => player.id === payload.playerId);
+      let index = player.hand.indexOf(payload.card);
+      player.hand.splice(index,1);
+      player.discard.push(payload.card);
+      console.log('played', player)
+    },
+    // setReadyToPickCard (state, payload) {
+    //   let player = state.players.find(player => player.id === payload.playerId)
+    //   player.isReadyToPickCard = payload,
+    // },
     setNextCurrentPlayer (state, payload) {
       let nextActivePlayerFound = false;
       let numberOfPlayers = state.players.length;
       let currentPlayerIndex = state.players.findIndex(player => player.id === payload.playerId);
+      let nextPlayerIndex = currentPlayerIndex + 1;
 
-      state.players[currentPlayerIndex].isCurrentPlayer === false;
 
       //while loop
       while(nextActivePlayerFound === false) {
-        if (currentPlayerIndex >= numberOfPlayers) {
-          currentPlayerIndex = 0;
-        }
-        else {
-          currentPlayerIndex += 1;
-        }
+        //if next is greater than the index of players, then set back to zero
+        nextPlayerIndex = (nextPlayerIndex > numberOfPlayers - 1) ? 0 : nextPlayerIndex;
 
-        if (state.players[currentPlayerIndex].isStillPlaying === true) {
-          state.players[currentPlayerIndex].isCurrentPlayer = true;
+        //if next player is the current player, then increment by 1
+        nextPlayerIndex = (nextPlayerIndex == currentPlayerIndex) ? nextPlayerIndex + 1: nextPlayerIndex;
+        if ((state.players[nextPlayerIndex].isStillPlaying === true)) {
+          state.players[currentPlayerIndex].isCurrentPlayer = false;
+          state.players[nextPlayerIndex].isCurrentPlayer = true;
+
           nextActivePlayerFound = true;
         }
       }
+    },
+    setTimeToChoose: (state, payload) => {
+
+    let nextPlayer = state.players.find(player => player.id === payload.playerId);
+    nextPlayer.isReadyToPickCard = true;
+    console.log(nextPlayer);
+
     }
+  },
+  actions: {
+
   },
   modules: {}
 });

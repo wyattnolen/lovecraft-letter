@@ -1,10 +1,11 @@
 <template>
     <div class="playerboard">
+
       <div class="playerboard__inner">
+        <p v-html="playerId"></p>
         <ul class="playerboard__hand">
-          <li v-for="card in playerHand" :key="card"><Card :card="card"></Card></li>
+          <li v-for="card in playerHand" :key="card"><Card :card="card" :player-id="playerId"></Card></li>
         </ul>
-         <p v-html="playerId"></p>
       </div>
     </div>
 </template>

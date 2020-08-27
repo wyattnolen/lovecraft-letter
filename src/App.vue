@@ -7,7 +7,7 @@
     </article>
 
 
-      <span @click="updateTest()">Change targetId</span>
+    <span @click="updateTest()">Change targetId</span>
   </div>
 </template>
 
@@ -22,23 +22,11 @@ export default {
   data: function() {
     return {
       deck: ["0", "1", "2", "3", "4", "5"],
-      timeToChoose: false,
       selectedCard: "",
       roundEnd: false,
-      gameEnd: false
+      gameEnd: false,
+      // getCurrentPlayerId: this.$store.getters.currentPlayerId,
     };
-  },
-  created() {
-    this.start();
-  },
-  watch: {
-    playerTurn: function () {
-      if (!this.roundEnd) {
-        this.addCardtoHand();
-        // this.chooseCard();
-        this.checkRoundEnd();
-      }
-    },
   },
   computed: {
     getAllPlayersId() {
@@ -48,11 +36,22 @@ export default {
       return this.$store.getters.currentPlayerId;
     },
   },
-  methods: {
-    updateTest() {
-      this.someIdProp = (this.someIdProp == '1') ? '2' : '1';
+  created() {
+    this.start();
+  },
+  watch: {
+    getCurrentPlayerId: function () {
+      if (!this.roundEnd) {
+        console.log('app watch fired');
+        this.addCardtoHand();
+        this.setTimeToChoose()
+        this.checkRoundEnd();
+      }
     },
+  },
+  methods: {
     start() {
+      console.log('game started');
       this.shuffleDeck();
       this.removeTopCard();
       this.drawInitialHand();
@@ -64,6 +63,10 @@ export default {
      if (this.deck.length == 0) {
        return (this.roundEnd = true);
      }
+    },
+
+    reset() {
+
     },
 
 /* START Deck Functions */
@@ -99,9 +102,7 @@ export default {
     drawInitialHand() {
         // Each player draws a card
         let playerIds = this.getAllPlayersId;
-        console.log('get all playerIds', playerIds);
         playerIds.forEach((id) => {
-          console.log('player (for each)', id);
           this.addCardtoHand(id);
         });
     },
@@ -115,6 +116,7 @@ export default {
         let drawnCard = this.deck[0];
         // ...Add the top card from the deck to the current player's hand
         console.log(currentPlayerId + ' drew ' + drawnCard);
+
           this.$store.commit({
             type: 'addCardToPlayerHand',
             card: drawnCard,
@@ -125,33 +127,20 @@ export default {
       }
     },
 
-    // chooseCard() {
-    //   // If player...
-    //   if (this.playerTurn == 'player') {
-    //     // Let them select which card they want to play
-    //     // this.timeToChoose = true;
-    //   }
-    //   // If computer...
-    //   else {
-    //     // Go through checks to determine what card should be played
-    //     // this.playCard(this.computer.hand[0]);
-    //   }
-    // },
-
-    // playCard(card) {
-
-    //   console.log(this.playerTurn + " played " + card);
-
-    //   // Remove the selected card from the current player's hand
-    //   var index = this.[this.playerTurn].hand.indexOf(this.selectedCard);
-    //   this.[this.playerTurn].hand.splice(index,1);
-
-    //   this.timeToChoose = false;
-    //   this.setPlayerTurn();
-    // },
+    setTimeToChoose(){
+      console.log('set ' + this.getCurrentPlayerId + ' time to choose');
+      this.$store.commit({
+        type: 'setTimeToChoose',
+        playerId: this.getCurrentPlayerId,
+      });
+    },
 
     setPlayerTurn() {
-      this.playerTurn = (this.playerTurn == 'player') ? 'computer' : 'player';
+      console.log('set player turn');
+      this.$store.commit({
+            type: 'setNextCurrentPlayer',
+            playerId: this.getCurrentPlayerId,
+          });
     },
 /* END Player Functions */
 

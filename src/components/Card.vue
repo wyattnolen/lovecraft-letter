@@ -1,6 +1,7 @@
 <template>
   <div class="card">
     <span class="card__name" v-html="getCardPropVal('title', card)"></span>
+    <span v-if="getTimeToChoose === playerId" @click="playCard(card)">Play Card</span>
     {{ card }}
   </div>
 </template>
@@ -12,7 +13,11 @@ export default {
     card: {
       type: String,
       required: true
-    }
+    },
+    playerId: {
+        type: String,
+        required: true
+    },
   },
   data: function() {
     return {
@@ -47,17 +52,75 @@ export default {
           value: "1",
           title: "Investigators"
         }
-      ]
+      ],
+      isCurrentPlayerHuman: false,
+      timeToChoose: false,
+      pickedCard: "0",
+      roundEnd: false,
     };
   },
-  computed: {},
+  computed: {
+    getCurrentPlayerId() {
+      console.log('getCurrentPlayerId', this.$store.getters.currentPlayerId)
+      return this.$store.getters.currentPlayerId;
+    },
+    getTimeToChoose() {
+      console.log('getTimeToChoose', this.$store.getters.timeToChoosePlayerId)
+      return this.$store.getters.timeToChoosePlayerId;
+    }
+  },
+  watch: {
+    getTimeToChoose: function () {
+      console.log('card watch triggered');
+      if (!this.roundEnd) {``
+        this.chooseCard();
+      }
+    },
+  },
   methods: {
     getCardPropVal(prop, id) {
       return this.cards.find(card => card.id === id)[prop];
     },
-    test(card) {
-      console.log("test", card);
-    }
+
+    chooseCard() {
+      // If player...
+      if (this.isPlayerHuman(this.getCurrentPlayerId)) {
+        // Let them select which card they want to play
+        this.timeToChoose = true;
+      }
+      // If computer...
+      else {
+        // Go through checks to determine what card should be played
+        this.timeToChoose = false;
+        this.playCard(this.pickedCard);
+      }
+    },
+
+    isPlayerHuman(id) {
+      return this.$store.getters.isPlayerHuman(id);
+    },
+
+    playCard(card) {
+      console.log(this.getCurrentPlayerId + " played " + card);
+      this.pickedCard = card;
+      // Remove the selected card from the current player's hand
+
+      this.$store.commit({
+        type: 'removeCardFromPlayerHand',
+        card: this.pickedCard,
+        playerId: this.getCurrentPlayerId,
+      });
+
+      this.timeToChoose = false;
+      this.setPlayerTurn();
+    },
+
+    setPlayerTurn() {
+      this.$store.commit({
+            type: 'setNextCurrentPlayer',
+            playerId: this.getCurrentPlayerId,
+          });
+    },
   }
 };
 </script>
