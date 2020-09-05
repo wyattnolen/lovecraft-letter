@@ -6,150 +6,153 @@
       </section>
     </article>
 
-
-    <span @click="updateTest()">Change targetId</span>
+    <span @click="playerTurn()">Change player turn</span>
   </div>
 </template>
 
 <script>
-import PlayerBoard from "@/components/PlayerBoard.vue";
+  import PlayerBoard from "@/components/PlayerBoard.vue";
 
-export default {
-  name: "App",
-  components: {
-    PlayerBoard
-  },
-  data: function() {
-    return {
-      deck: ["0", "1", "2", "3", "4", "5"],
-      selectedCard: "",
-      roundEnd: false,
-      gameEnd: false,
-      // getCurrentPlayerId: this.$store.getters.currentPlayerId,
-    };
-  },
-  computed: {
-    getAllPlayersId() {
-      return this.$store.getters.allPlayerIds;
+  export default {
+    name: "App",
+    components: {
+      PlayerBoard
     },
-    getCurrentPlayerId() {
-      return this.$store.getters.currentPlayerId;
+    data: function() {
+      return {
+        deck: ["0", "1", "2", "3", "4", "5"],
+        selectedCard: "",
+        roundEnd: false,
+        gameEnd: false
+        // getCurrentPlayerId: this.$store.getters.currentPlayerId,
+      };
     },
-  },
-  created() {
-    this.start();
-  },
-  watch: {
-    getCurrentPlayerId: function () {
-      if (!this.roundEnd) {
-        console.log('app watch fired');
-        this.addCardtoHand();
-        this.setTimeToChoose()
-        this.checkRoundEnd();
+    computed: {
+      getAllPlayersId() {
+        return this.$store.getters.allPlayerIds;
+      },
+      getCurrentPlayerId() {
+        return this.$store.getters.currentPlayerId;
       }
     },
-  },
-  methods: {
-    start() {
-      console.log('game started');
-      this.shuffleDeck();
-      this.removeTopCard();
-      this.drawInitialHand();
-      this.setPlayerTurn();
-      // this.addTopCardBack();
+    created() {
+      this.start();
     },
-
-    checkRoundEnd() {
-     if (this.deck.length == 0) {
-       return (this.roundEnd = true);
-     }
-    },
-
-    reset() {
-
-    },
-
-/* START Deck Functions */
-    shuffleDeck() {
-      var array = this.deck;
-      var currentIndex = array.length,
-        temporaryValue,
-        randomIndex;
-
-      while (0 !== currentIndex) {
-        randomIndex = Math.floor(Math.random() * currentIndex);
-        currentIndex -= 1;
-
-        temporaryValue = array[currentIndex];
-        array[currentIndex] = array[randomIndex];
-        array[randomIndex] = temporaryValue;
+    watch: {
+      getCurrentPlayerId: function() {
+        if (!this.roundEnd) {
+          console.log("app watch fired");
+          this.addCardtoHand();
+          this.setTimeToChoose();
+          this.checkRoundEnd();
+        }
       }
     },
+    methods: {
+      start() {
+        console.log("game started");
+        this.shuffleDeck();
+        this.removeTopCard();
+        this.drawInitialHand();
+        this.setPlayerTurn();
+        // this.addTopCardBack();
+      },
 
-    removeTopCard() {
-      this.deck.splice(0, 1);
-    },
+      checkRoundEnd() {
+        if (this.deck.length == 0) {
+          return (this.roundEnd = true);
+        }
+      },
 
-    addTopCardBack() {
-      this.deck.push(this.removedCard);
-      this.removedCard = "";
-    },
+      reset() {},
 
-/* END Deck Functions */
+      /* START Deck Functions */
+      shuffleDeck() {
+        var array = this.deck;
+        var currentIndex = array.length,
+          temporaryValue,
+          randomIndex;
 
+        while (0 !== currentIndex) {
+          randomIndex = Math.floor(Math.random() * currentIndex);
+          currentIndex -= 1;
 
-/* START Player Functions */
-    drawInitialHand() {
+          temporaryValue = array[currentIndex];
+          array[currentIndex] = array[randomIndex];
+          array[randomIndex] = temporaryValue;
+        }
+      },
+
+      removeTopCard() {
+        this.deck.splice(0, 1);
+      },
+
+      addTopCardBack() {
+        this.deck.push(this.removedCard);
+        this.removedCard = "";
+      },
+
+      /* END Deck Functions */
+
+      /* START Player Functions */
+      drawInitialHand() {
         // Each player draws a card
         let playerIds = this.getAllPlayersId;
-        playerIds.forEach((id) => {
+        playerIds.forEach(id => {
           this.addCardtoHand(id);
         });
-    },
+      },
 
-    addCardtoHand(id) {
-      var currentPlayerId = (typeof(id) !== 'undefined') ? id : this.getCurrentPlayerId;
-      console.log('currentPlayerId', currentPlayerId);
+      addCardtoHand(id) {
+        var currentPlayerId =
+          typeof id !== "undefined" ? id : this.getCurrentPlayerId;
+        console.log("currentPlayerId", currentPlayerId);
 
-      // If there are cards that can be drawn...
-      if (this.deck.length > 0) {
-        let drawnCard = this.deck[0];
-        // ...Add the top card from the deck to the current player's hand
-        console.log(currentPlayerId + ' drew ' + drawnCard);
+        // If there are cards that can be drawn...
+        if (this.deck.length > 0) {
+          let drawnCard = this.deck[0];
+          // ...Add the top card from the deck to the current player's hand
+          console.log(currentPlayerId + " drew " + drawnCard);
 
           this.$store.commit({
-            type: 'addCardToPlayerHand',
+            type: "addCardToPlayerHand",
             card: drawnCard,
-            playerId: currentPlayerId,
+            playerId: currentPlayerId
           });
-        // ...Remove that top card from the deck
-        this.removeTopCard();
+          // ...Remove that top card from the deck
+          this.removeTopCard();
+        }
+      },
+
+      setTimeToChoose() {
+        console.log("set " + this.getCurrentPlayerId + " time to choose");
+        this.$store.commit({
+          type: "setTimeToChoose",
+          playerId: this.getCurrentPlayerId
+        });
+      },
+
+      setPlayerTurn() {
+        console.log("set player turn");
+        this.$store.commit({
+          type: "setNextCurrentPlayer",
+          playerId: this.getCurrentPlayerId
+        });
+      },
+
+      playerTurn() {
+        this.$store.dispatch({
+          type: "nextPlayerTurn",
+          playerId: this.getCurrentPlayerId
+        });
       }
-    },
-
-    setTimeToChoose(){
-      console.log('set ' + this.getCurrentPlayerId + ' time to choose');
-      this.$store.commit({
-        type: 'setTimeToChoose',
-        playerId: this.getCurrentPlayerId,
-      });
-    },
-
-    setPlayerTurn() {
-      console.log('set player turn');
-      this.$store.commit({
-            type: 'setNextCurrentPlayer',
-            playerId: this.getCurrentPlayerId,
-          });
-    },
-/* END Player Functions */
-
-  }
-};
+      /* END Player Functions */
+    }
+  };
 </script>
 
 <style lang="scss">
-span {
-  font-weight: bold;
-}
+  span {
+    font-weight: bold;
+  }
 </style>
